@@ -1,0 +1,10 @@
+# Archivos sensibles
+.env
+
+# Dependencias de IDE
+.vscode/
+.idea/
+
+# Archivos de compilación
+*.log
+*.tmp
