@@ -22,10 +22,16 @@ func CargarRutas() {
 	})
 
 	http.HandleFunc("/pasajeros/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/desactivar") && r.Method == http.MethodPut {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/desactivar") && r.Method == http.MethodPut:
 			controllers.DesactivarPasajero(w, r)
-			return
+
+		case strings.HasSuffix(r.URL.Path, "/activar") && r.Method == http.MethodPut:
+			controllers.ActivarPasajero(w, r)
+
+		default:
+			controllers.BuscarPasajero(w, r)
 		}
-		controllers.BuscarPasajero(w, r)
+
 	})
 }

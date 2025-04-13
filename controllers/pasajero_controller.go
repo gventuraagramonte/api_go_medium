@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"api_go_medium/models"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,47 +9,78 @@ import (
 	"strings"
 )
 
+type PaginacionResponse struct {
+	Data []models.Pasajero `json:"data"`
+	Meta struct {
+		Page  int `json:"page"`
+		Limit int `json:"limit"`
+		Total int `json:"total"`
+	} `json:"meta"`
+}
+
 func ListarPasajeros(w http.ResponseWriter, r *http.Request) {
-	rows, err := models.DB.Query("SELECT asiento, nombre, activo FROM pasajeros WHERE activo = true ORDER BY asiento")
-	if err != nil {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	//Valores por defecto
+	page := 1
+	limit := 10
+
+	if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+		page = p
+	}
+
+	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+		limit = l
+	}
+
+	offset := (page - 1) * limit
+
+	var pasajeros []models.Pasajero
+	if err := models.DB.
+		Where("activo=?", true).
+		Order("asiento").
+		Limit(limit).
+		Offset(offset).
+		Find(&pasajeros).Error; err != nil {
 		http.Error(w, "Error al consultar pasajeros", http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
 
-	var pasajeros []models.Pasajero
-
-	for rows.Next() {
-		var p models.Pasajero
-		err := rows.Scan(&p.Asiento, &p.Nombre, &p.Activo)
-		if err != nil {
-			http.Error(w, "Error al leer datos", http.StatusInternalServerError)
-			return
-		}
-		pasajeros = append(pasajeros, p)
+	// Contar total de pasajeros activos
+	var total int64
+	if err := models.DB.Model(&models.Pasajero{}).Where("activo = true").Count(&total).Error; err != nil {
+		http.Error(w, "Error al contar pasajeros", http.StatusInternalServerError)
+		return
 	}
 
+	// Armar respuesta
+	resp := PaginacionResponse{
+		Data: pasajeros,
+	}
+	resp.Meta.Page = page
+	resp.Meta.Limit = limit
+	resp.Meta.Total = int(total)
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(pasajeros)
+	json.NewEncoder(w).Encode(resp)
 
 }
 
 func CrearPasajero(w http.ResponseWriter, r *http.Request) {
 	var nuevo models.Pasajero
-	err := json.NewDecoder(r.Body).Decode(&nuevo)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&nuevo); err != nil {
 		http.Error(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
 
-	_, err = models.DB.Exec("INSERT INTO pasajeros (asiento, nombre) VALUES ($1, $2)", nuevo.Asiento, nuevo.Nombre)
-	if err != nil {
-		http.Error(w, "Error al insertar pasajero (¿asiento duplicado?)", http.StatusInternalServerError)
+	if err := models.DB.Create(&nuevo).Error; err != nil {
+		http.Error(w, "Error al crear pasajero", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "Pasajero agregado: %s (Asiento %d)", nuevo.Nombre, nuevo.Asiento)
+	json.NewEncoder(w).Encode(nuevo)
 }
 
 func BuscarPasajero(w http.ResponseWriter, r *http.Request) {
@@ -67,13 +97,8 @@ func BuscarPasajero(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var p models.Pasajero
-	err = models.DB.QueryRow("SELECT asiento, nombre FROM pasajeros WHERE asiento = $1", asientoID).Scan(&p.Asiento, &p.Nombre)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Pasajero no encontrado", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "Error al consultar la base de datos", http.StatusInternalServerError)
+	if err := models.DB.Where("asiento = ? AND activo = true", asientoID).First(&p).Error; err != nil {
+		http.Error(w, "Pasajero no encontrado", http.StatusNotFound)
 		return
 	}
 
@@ -95,18 +120,37 @@ func DesactivarPasajero(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := models.DB.Exec("UPDATE pasajeros SET activo = false WHERE asiento = $1", asientoID)
-	if err != nil {
+	if err := models.DB.Model(&models.Pasajero{}).
+		Where("asiento = ? AND activo = true", asientoID).
+		Update("activo", false).Error; err != nil {
 		http.Error(w, "Error al desactivar pasajero", http.StatusInternalServerError)
-		return
-	}
-
-	count, _ := res.RowsAffected()
-	if count == 0 {
-		http.Error(w, "Pasajero no encontrado", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "✅ Pasajero del asiento %d fue desactivado", asientoID)
+}
+
+func ActivarPasajero(w http.ResponseWriter, r *http.Request) {
+	partes := strings.Split(r.URL.Path, "/")
+	if len(partes) != 4 || partes[3] != "activar" {
+		http.Error(w, "Ruta inválida", http.StatusBadRequest)
+		return
+	}
+
+	asientoID, err := strconv.Atoi(partes[2])
+	if err != nil {
+		http.Error(w, "Asiento inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := models.DB.Model(&models.Pasajero{}).
+		Where("asiento = ? AND activo = false", asientoID).
+		Update("activo", true).Error; err != nil {
+		http.Error(w, "No se pudo activar el pasajero", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "🟢 Pasajero del asiento %d ha sido reactivado", asientoID)
 }
