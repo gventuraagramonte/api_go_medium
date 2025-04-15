@@ -1,12 +1,13 @@
 package main
 
 import (
-	"api_go_medium/models"
+	"api_go_medium/database"
 	"api_go_medium/routes"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -38,14 +39,22 @@ func main() {
 		}
 	}
 
-	log.Printf("📌 DB_HOST=%s", os.Getenv("DB_HOST"))
-	log.Printf("📌 DB_USER=%s", os.Getenv("DB_USER"))
-	log.Printf("📌 DB_NAME=%s", os.Getenv("DB_NAME"))
-
 	log.Println("🔌 Conectando a la base de datos...")
-	models.ConectarDB()
+	database.ConectarSQL()
+	database.ConectarGORM()
 
 	routes.CargarRutas()
 	fmt.Println("🚀 API modular corriendo en http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+
+	server := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Handler:      nil,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal("❌ Error al iniciar el servidor:", err)
+	}
+
 }

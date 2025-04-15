@@ -3,35 +3,28 @@ package routes
 import (
 	"api_go_medium/controllers"
 	"net/http"
-	"strings"
 )
 
 func CargarRutas() {
-	http.HandleFunc("/pasajeros", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			controllers.ListarPasajeros(w, r)
+	http.Handle("/docs/", http.StripPrefix("/docs/", http.FileServer(http.Dir("docs"))))
+	http.Handle("/openapi.yaml", http.FileServer(http.Dir("./")))
+	http.HandleFunc("/pasajeros", controllers.CrearPasajero)
+	http.HandleFunc("/pasajeros-sql", controllers.ListarPasajerosSQL)
+	http.HandleFunc("/pasajeros-sql/", controllers.BuscarPasajeroSQL)
+	http.HandleFunc("/pasajeros-sql/desactivar/", controllers.DesactivarPasajero)
+	http.HandleFunc("/pasajeros-sql/activar/", controllers.ActivarPasajero)
 
-		case http.MethodPost:
-			controllers.CrearPasajero(w, r)
+	// http.HandleFunc("/pasajeros/", func(w http.ResponseWriter, r *http.Request) {
+	// 	switch {
+	// 	case strings.HasSuffix(r.URL.Path, "/desactivar") && r.Method == http.MethodPut:
+	// 		controllers.DesactivarPasajero(w, r)
 
-		default:
-			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	// 	case strings.HasSuffix(r.URL.Path, "/activar") && r.Method == http.MethodPut:
+	// 		controllers.ActivarPasajero(w, r)
 
-		}
-	})
+	// 	default:
+	// 		controllers.BuscarPasajero(w, r)
+	// 	}
 
-	http.HandleFunc("/pasajeros/", func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case strings.HasSuffix(r.URL.Path, "/desactivar") && r.Method == http.MethodPut:
-			controllers.DesactivarPasajero(w, r)
-
-		case strings.HasSuffix(r.URL.Path, "/activar") && r.Method == http.MethodPut:
-			controllers.ActivarPasajero(w, r)
-
-		default:
-			controllers.BuscarPasajero(w, r)
-		}
-
-	})
+	// })
 }
