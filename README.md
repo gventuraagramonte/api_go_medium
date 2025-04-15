@@ -99,6 +99,35 @@ go run .
 
 ---
 
+---
+
+## 🔐 Seguridad con GOSEC
+
+**Gosec** es una herramienta para escanear código Go en busca de vulnerabilidades de seguridad.
+
+### 📥 Instalación
+
+```bash
+go install github.com/securego/gosec/v2/cmd/gosec@latest
+```
+
+> ✅ Asegúrate de tener `$GOPATH/bin` en tu `PATH`. Por defecto en Windows: `C:\Users\TU_USUARIO\go\bin`
+
+### 🚦 Ejecutar escaneo
+
+```bash
+# Escaneo rápido
+$ make gosec
+
+# Generar reporte HTML
+$ make gosec-report
+
+# Revisa el archivo generado:
+$ open gosec-report.html
+```
+
+---
+
 ## 📦 Archivos versionables
 
 - `go.mod`, `go.sum`

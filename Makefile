@@ -29,3 +29,14 @@ docker-run-detached:
 # 🛑 Parar y eliminar contenedor
 docker-stop:
 	docker rm -f $(APP_NAME)
+
+# 🔐 Análisis de seguridad con Gosec
+gosec:
+	@echo "🔍 Ejecutando escaneo de seguridad con Gosec..."
+	@gosec ./...
+
+# 📄 Generar reporte en HTML
+gosec-report:
+	@echo "📝 Generando reporte HTML con Gosec..."
+	@gosec -fmt html -out gosec-report.html ./...
+	@echo "✅ Reporte generado: gosec-report.html"
