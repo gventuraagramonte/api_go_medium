@@ -40,3 +40,12 @@ gosec-report:
 	@echo "📝 Generando reporte HTML con Gosec..."
 	@gosec -fmt html -out gosec-report.html ./...
 	@echo "✅ Reporte generado: gosec-report.html"
+
+
+# 🚀 Comandos Makefile sugeridos para optimización final
+lint:
+	@echo "🔎 Ejecutando lint con golangci-lint..."
+	@golangci-lint run ./...
+
+release: clean build gosec
+	@echo "📦 Proyecto empaquetado y validado para producción"

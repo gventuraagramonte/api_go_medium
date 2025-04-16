@@ -8,3 +8,10 @@
 # Archivos de compilación
 *.log
 *.tmp
+*.exe
+*.test
+*.html
+*.out
+gosec-report.html
+gosec-report.json
+openapi.yaml.bak

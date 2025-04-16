@@ -1,0 +1,16 @@
+# Archivos y directorios a ignorar por Docker
+.env
+*.log
+*.exe
+*.test
+*.out
+*.html
+.idea/
+.vscode/
+.DS_Store
+gosec-report.html
+gosec-report.json
+openapi.yaml.bak
+node_modules/
+bin/
+dist/
