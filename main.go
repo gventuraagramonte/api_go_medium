@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -44,13 +45,24 @@ func main() {
 	database.ConectarGORM()
 
 	routes.CargarRutas()
+
+	// Cors middleware
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"},
+		AllowCredentials: true,
+	})
+
+	handlerConCORS := c.Handler(http.DefaultServeMux)
+
 	fmt.Println("🚀 API modular corriendo en http://localhost:8080")
 
 	server := &http.Server{
 		Addr:         ":8080",
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		Handler:      nil,
+		Handler:      handlerConCORS,
 	}
 
 	if err := server.ListenAndServe(); err != nil {
