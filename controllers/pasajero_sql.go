@@ -35,7 +35,7 @@ func ListarPasajerosSQL(w http.ResponseWriter, r *http.Request) {
 
 	// Total de pasajeros activos
 	var total int
-	err := database.SQLDB.QueryRow(`SELECT count(*) FROM pasajeros WHERE activo=true`).Scan(&total)
+	err := database.SQLDB.QueryRow(`SELECT count(*) FROM pasajeros`).Scan(&total)
 	if err != nil {
 		http.Error(w, "Error al contar registros", http.StatusInternalServerError)
 		return
@@ -44,7 +44,6 @@ func ListarPasajerosSQL(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SQLDB.Query(
 		`SELECT id, asiento, nombre, activo
 		FROM pasajeros
-		WHERE activo = true
 		ORDER BY asiento
 		LIMIT $1 OFFSET $2`, limit, offset)
 
