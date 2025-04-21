@@ -46,7 +46,7 @@ func main() {
 	database.ConectarGORM()
 
 	// ✅ Inicializar JWKS (aquí es el lugar correcto)
-	auth.InitJWKS("https://dev-arcw7okepel1j1bi.us.auth0.com/.well-known/jwks.json")
+	auth.InitJWKS("https://dev-arcw7okepellj1bi.us.auth0.com/.well-known/jwks.json")
 
 	routes.CargarRutas()
 
