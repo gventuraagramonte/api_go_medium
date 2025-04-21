@@ -18,7 +18,7 @@ func InitJWKS(jwksURL string) {
 	certPool := x509.NewCertPool()
 
 	// Leer el certificado raiz descargado de Auth0
-	cert, err := os.ReadFile("certs/auth0-root.pem")
+	cert, err := os.ReadFile("/certs/auth0-root.pem")
 	if err != nil {
 		log.Fatal("❌ No se pudo leer el certificado raíz ", err)
 	}

@@ -18,6 +18,7 @@ FROM scratch
 
 # Copiar el binario desde el builder
 COPY --from=builder /app/api_go_medium /api_go_medium
+COPY --from=builder /app/certs/auth0-root.pem /certs/auth0-root.pem
 
 # Puerto de la aplicación
 EXPOSE 8080
