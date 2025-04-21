@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"api_go_medium/auth"
 	"api_go_medium/controllers"
 	"net/http"
 )
@@ -8,9 +9,9 @@ import (
 func CargarRutas() {
 	http.Handle("/docs/", http.StripPrefix("/docs/", http.FileServer(http.Dir("docs"))))
 	http.Handle("/openapi.yaml", http.FileServer(http.Dir("./")))
-	http.HandleFunc("/pasajeros", controllers.CrearPasajero)
-	http.HandleFunc("/pasajeros-sql", controllers.ListarPasajerosSQL)
+	http.Handle("/pasajeros", auth.JWTMiddleware(http.HandlerFunc(controllers.CrearPasajero)))
+	http.Handle("/pasajeros-sql", auth.JWTMiddleware(http.HandlerFunc((controllers.ListarPasajerosSQL))))
 	http.HandleFunc("/pasajeros-sql/", controllers.BuscarPasajeroSQL)
-	http.HandleFunc("/pasajeros-sql/desactivar/", controllers.DesactivarPasajero)
-	http.HandleFunc("/pasajeros-sql/activar/", controllers.ActivarPasajero)
+	http.Handle("/pasajeros-sql/desactivar/", auth.JWTMiddleware(http.HandlerFunc(controllers.DesactivarPasajero)))
+	http.Handle("/pasajeros-sql/activar/", auth.JWTMiddleware(http.HandlerFunc(controllers.ActivarPasajero)))
 }

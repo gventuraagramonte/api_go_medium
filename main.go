@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api_go_medium/auth"
 	"api_go_medium/database"
 	"api_go_medium/routes"
 	"fmt"
@@ -43,6 +44,9 @@ func main() {
 	log.Println("🔌 Conectando a la base de datos...")
 	database.ConectarSQL()
 	database.ConectarGORM()
+
+	// ✅ Inicializar JWKS (aquí es el lugar correcto)
+	auth.InitJWKS(os.Getenv("AUTH0_JWKS_URL"))
 
 	routes.CargarRutas()
 
