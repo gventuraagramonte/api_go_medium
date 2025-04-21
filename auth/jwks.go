@@ -15,7 +15,7 @@ func InitJWKS(jwksURL string) {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: false,
 			},
 		},
 	}
