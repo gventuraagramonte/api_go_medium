@@ -2,8 +2,10 @@ package auth
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/MicahParks/keyfunc"
@@ -12,15 +14,29 @@ import (
 var JWKS *keyfunc.JWKS
 
 func InitJWKS(jwksURL string) {
+	// Crear un pool de certificados raíz personalizado
+	certPool := x509.NewCertPool()
+
+	// Leer el certificado raiz descargado de Auth0
+	cert, err := os.ReadFile("certs/auth0-root.pem")
+	if err != nil {
+		log.Fatal("❌ No se pudo leer el certificado raíz ", err)
+	}
+	if ok := certPool.AppendCertsFromPEM(cert); !ok {
+		log.Fatal("❌ Falló al agregar el certificado raíz al pool")
+	}
+
+	// Configurar el cliente HTTP con RootCAs seguros
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				RootCAs:    certPool,
+				MinVersion: tls.VersionTLS12,
 			},
 		},
 	}
 
-	var err error
+	// Configurar JWKS
 	JWKS, err = keyfunc.Get(jwksURL, keyfunc.Options{
 		Client:            httpClient,
 		RefreshInterval:   time.Hour,
