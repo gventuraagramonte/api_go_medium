@@ -22,6 +22,9 @@ Una API REST desarrollada en Go que permite gestionar pasajeros mediante operaci
 - Consulta por número de asiento
 - Soft delete (desactivación de pasajeros)
 - Conexión segura usando variables de entorno
+- Validación segura de tokens JWT usando JWKS (Auth0)
+- Conexión segura usando variables de entorno
+- Protecciones estáticas con `gosec` (sin `InsecureSkipVerify`)
 
 ---
 
@@ -31,6 +34,9 @@ Una API REST desarrollada en Go que permite gestionar pasajeros mediante operaci
 - [GORM](https://gorm.io/)
 - [PostgreSQL (Neon)](https://neon.tech/)
 - [godotenv](https://github.com/joho/godotenv)
+- [Auth0](https://auth0.com/)
+- [MicahParks/keyfunc](https://github.com/MicahParks/keyfunc) para JWKS
+- `crypto/x509` y `tls.Config` para validación de certificados
 
 ---
 
